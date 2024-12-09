@@ -1,7 +1,7 @@
 import os
 import requests
-from atproto import Client, models
-from atproto.xrpc_client import models as api_models
+from atproto import Client
+from atproto import models as api_models
 
 def format_author_hashtag(author):
     # Remove spaces and special characters from author name
