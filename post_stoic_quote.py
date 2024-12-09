@@ -1,10 +1,36 @@
 import os
 import requests
 from atproto import Client, models
+from atproto.xrpc_client import models as api_models
 
 def format_author_hashtag(author):
     # Remove spaces and special characters from author name
     return ''.join(c for c in author.replace(' ', '') if c.isalnum())
+
+def create_hashtag_facets(text):
+    facets = []
+    words = text.split()
+    current_position = 0
+    
+    for word in words:
+        word_start = text.find(word, current_position)
+        word_end = word_start + len(word)
+        current_position = word_end
+        
+        if word.startswith('#'):
+            # Remove the # for the tag value
+            tag = word[1:]
+            facets.append(api_models.AppBskyRichtextFacet.Main(
+                index=api_models.AppBskyRichtextFacet.ByteSlice(
+                    byteStart=word_start,
+                    byteEnd=word_end
+                ),
+                features=[api_models.AppBskyRichtextFacet.Tag(
+                    tag=tag
+                )]
+            ))
+    
+    return facets
 
 def main():
     # Check if environment variables are set
@@ -28,11 +54,16 @@ def main():
         author_hashtag = format_author_hashtag(quote_author)
         
         # Format post with quote, author, and hashtags
-        # Note: All five hashtags included: philosophy, stoic, author, wisdom, and dailystoic
         post_text = f'"{quote_text}"\n\n- {quote_author}\n\n#philosophy #stoic #{author_hashtag} #wisdom #dailystoic'
         
-        # Create and send post
-        post = client.send_post(text=post_text)
+        # Create facets for hashtags
+        facets = create_hashtag_facets(post_text)
+        
+        # Create and send post with facets
+        post = client.send_post(
+            text=post_text,
+            facets=facets
+        )
         client.like(post.uri, post.cid)
         print("Successfully posted quote!")
     else:
