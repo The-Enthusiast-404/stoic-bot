@@ -2,6 +2,10 @@ import os
 import requests
 from atproto import Client, models
 
+def format_author_hashtag(author):
+    # Remove spaces and special characters from author name
+    return ''.join(c for c in author.replace(' ', '') if c.isalnum())
+
 def main():
     # Check if environment variables are set
     username = os.getenv('BSKY_USERNAME')
@@ -19,7 +23,13 @@ def main():
         data = response.json()
         quote_text = data['text']
         quote_author = data['author']
-        post_text = f'"{quote_text}"\n\n- {quote_author}'
+        
+        # Create author hashtag
+        author_hashtag = format_author_hashtag(quote_author)
+        
+        # Format post with quote, author, and hashtags
+        # Note: All five hashtags included: philosophy, stoic, author, wisdom, and dailystoic
+        post_text = f'"{quote_text}"\n\n- {quote_author}\n\n#philosophy #stoic #{author_hashtag} #wisdom #dailystoic'
         
         # Create and send post
         post = client.send_post(text=post_text)
