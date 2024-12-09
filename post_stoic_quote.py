@@ -1,28 +1,28 @@
 import os
 import requests
-import tweepy
+from atproto import Client, client_utils
 
-def get_quote():
+
+def main():
+    client = Client()
+    username = os.environ['BSKY_USERNAME']
+    password = os.environ['BSKY_PASSWORD']
+    profile = client.login(username, password)
+    print('Welcome,', profile.display_name)
+
     response = requests.get('https://stoic-quotes.com/api/quote')
     if response.status_code == 200:
         data = response.json()
-        return f"{data['text']} — {data['author']}"
-    return None
+        quote_text = data['text']
+        quote_author = data['author']
+        post_text = f'"{quote_text}"\n\n- {quote_author}'
 
-def post_to_x(quote):
-    api_key = os.environ['TWITTER_API_KEY']
-    api_secret_key = os.environ['TWITTER_API_SECRET_KEY']
-    access_token = os.environ['TWITTER_ACCESS_TOKEN']
-    access_token_secret = os.environ['TWITTER_ACCESS_TOKEN_SECRET']
+        text = client_utils.TextBuilder().text(post_text)
+        post = client.send_post(text)
+        client.like(post.uri, post.cid)
+    else:
+        print('Failed to retrieve quote.')
 
-    auth = tweepy.OAuth1UserHandler(api_key, api_secret_key, access_token, access_token_secret)
-    api = tweepy.API(auth)
-    api.update_status(quote)
-
-def main():
-    quote = get_quote()
-    if quote:
-        post_to_x(quote)
 
 if __name__ == '__main__':
     main()
