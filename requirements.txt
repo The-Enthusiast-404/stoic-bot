@@ -1,2 +1,2 @@
-atproto-client
+atproto
 requests

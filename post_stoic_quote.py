@@ -1,6 +1,6 @@
 import os
 import requests
-from atproto_client import Client, models
+from atproto import Client, models
 
 def main():
     # Check if environment variables are set
