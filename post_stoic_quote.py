@@ -5,8 +5,8 @@ import tweepy
 def get_quote():
     response = requests.get('https://stoic-quotes.com/api/quote')
     if response.status_code == 200:
-        data = response.json()['data']
-        return f"{data['body']} — {data['author']}"
+        data = response.json()
+        return f"{data['text']} — {data['author']}"
     return None
 
 def post_to_x(quote):
